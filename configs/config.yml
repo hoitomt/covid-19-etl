@@ -1,0 +1,11 @@
+environment: development
+log:
+  base_path: log
+  level: debug
+data:
+  state:
+    base_path: data/state
+    url: https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-states.csv
+  county:
+    base_path: data/county
+    url: https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-counties.csv
