@@ -1,0 +1,7 @@
+DROP TABLE IF EXISTS counties;
+
+DROP TABLE IF EXISTS states;
+
+DROP TABLE IF EXISTS county_data;
+
+DROP TABLE IF EXISTS state_data;

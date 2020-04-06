@@ -24,7 +24,6 @@ func Extract() {
 	if err != nil {
 		log.Printf("Error downloading state data. %s", err)
 	}
-
 }
 
 func extractAndSave(category string) error {

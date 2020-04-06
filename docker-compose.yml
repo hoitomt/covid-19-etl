@@ -1,0 +1,17 @@
+version: '3'
+services:
+  postgres:
+    image: postgres:12.2
+    container_name: covid_postgres
+    ports:
+      - 5433:5432
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: covid_user
+      POSTGRES_PASSWORD: my_password
+      POSTGRES_DB: covid_development
+
+volumes:
+  postgres_data:
+    driver: local
