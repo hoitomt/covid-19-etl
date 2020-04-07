@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"sync"
 )
 
 type CaseFile struct {
@@ -13,15 +14,17 @@ type CaseFile struct {
 func main() {
 	log.Println("Start Application")
 	initConfig()
+	var wg sync.WaitGroup
 
 	fileTypes := []string{"county", "state"}
 
 	transformChan := make(chan CaseFile)
 	loadChan := make(chan CovidCase)
 
-	go Load(loadChan)
+	go Load(loadChan, &wg)
 	go Transform(transformChan, loadChan)
 
+	wg.Add(1) // done is at the end of the Load process
 	for _, fileType := range fileTypes {
 		fileToTransform, err := Extract(fileType)
 		if err != nil {
@@ -33,7 +36,5 @@ func main() {
 		transformChan <- caseFile
 	}
 	close(transformChan)
+	wg.Wait()
 }
-
-// 1. Put the extracted file onto the transform channel
-// 2. Loop through the file and put each record on the Load Channel
