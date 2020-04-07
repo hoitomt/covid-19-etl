@@ -15,6 +15,8 @@ Extract data from the NY Times data set of covid-19 cases ([github link](https:/
 
 - PSQL `docker-compose exec postgres psql -U covid_user -d covid_development`
 - Create a migration `migrate create -ext sql -dir db/migrations -seq create_counties_table`
+- Rollback a migration `migrate -database ${POSTGRESQL_URL} -path db/migrations down`
+- Force version `migrate -database ${POSTGRESQL_URL} -path db/migrations force VERSION`
 
 
 ### Notes

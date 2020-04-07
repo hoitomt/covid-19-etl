@@ -12,21 +12,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-func Extract() {
-	var err error
-
-	err = extractAndSave("county")
-	if err != nil {
-		log.Printf("Error downloading county data. %s", err)
-	}
-
-	err = extractAndSave("state")
-	if err != nil {
-		log.Printf("Error downloading state data. %s", err)
-	}
-}
-
-func extractAndSave(category string) error {
+func Extract(category string) (string, error) {
 	basePath := viper.GetString(fmt.Sprintf("data.%s.base_path", category))
 	extractUrl := viper.GetString(fmt.Sprintf("data.%s.url", category))
 
@@ -36,7 +22,7 @@ func extractAndSave(category string) error {
 	fileName := fmt.Sprintf("%s_%s.csv", nowString, category)
 	fullFilePath := filepath.Join(basePath, fileName)
 
-	return download(fullFilePath, extractUrl)
+	return fullFilePath, download(fullFilePath, extractUrl)
 }
 
 func download(extractFilePath string, dataUrl string) error {
