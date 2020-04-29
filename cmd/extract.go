@@ -3,18 +3,15 @@ package main
 import (
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"path/filepath"
 	"time"
-
-	"github.com/spf13/viper"
 )
 
 func Extract(category string) (string, error) {
-	basePath := viper.GetString(fmt.Sprintf("data.%s.base_path", category))
-	extractUrl := viper.GetString(fmt.Sprintf("data.%s.url", category))
+	basePath := Config.DataBasePath(category)
+	extractUrl := Config.DataUrl(category)
 
 	os.MkdirAll(basePath, 0755)
 	now := time.Now()
@@ -26,7 +23,7 @@ func Extract(category string) (string, error) {
 }
 
 func download(extractFilePath string, dataUrl string) error {
-	log.Printf("Download from %s", dataUrl)
+	logger.Infof("Download from %s", dataUrl)
 	resp, err := http.Get(dataUrl)
 	if err != nil {
 		return err
@@ -39,7 +36,7 @@ func download(extractFilePath string, dataUrl string) error {
 	}
 	defer out.Close()
 
-	log.Printf("Stream output to %s", extractFilePath)
+	logger.Infof("Stream output to %s", extractFilePath)
 	_, err = io.Copy(out, resp.Body)
 	return err
 }

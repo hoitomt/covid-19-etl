@@ -1,5 +1,7 @@
 .env
 
+*.log
+
 covid-19-etl
 vendor
 

@@ -9,6 +9,9 @@ build_for_ubuntu:
 clean:
 	rm ${EXE_NAME}
 
+dependencies:
+	go mod vendor
+
 migrate:
 	migrate -database ${POSTGRESQL_URL} -path db/migrations up
 

@@ -6,7 +6,7 @@ database:
   password: my_password
   database: covid_development
 log:
-  base_path: log
+  path: log/development.log
   level: debug
 data:
   state:

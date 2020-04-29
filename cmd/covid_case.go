@@ -4,7 +4,6 @@ import (
 	"crypto/sha256"
 	"database/sql"
 	"fmt"
-	"log"
 	"strconv"
 	"time"
 
@@ -46,12 +45,12 @@ func (c *CountyCase) parseCsv(csvString []string) {
 	c.Fips = csvString[3]
 	c.Cases, err = strconv.Atoi(csvString[4])
 	if err != nil {
-		log.Printf("ERROR parsing case value %s", csvString[3])
+		logger.Errorf("ERROR parsing case value %s", csvString[3])
 		c.Cases = 0
 	}
 	c.Deaths, err = strconv.Atoi(csvString[5])
 	if err != nil {
-		log.Printf("ERROR parsing death value %s", csvString[4])
+		logger.Errorf("ERROR parsing death value %s", csvString[4])
 		c.Deaths = 0
 	}
 }
@@ -71,38 +70,38 @@ func (c CountyCase) Upsert(db *sql.DB) {
 	row := db.QueryRow("SELECT id FROM states WHERE name = '$1' LIMIT 1", c.State)
 	switch err := row.Scan(&id); err {
 	case sql.ErrNoRows:
-		log.Printf("No rows returned from State query. %s", err)
+		logger.Infof("No rows returned from State query. %s", err)
 	case nil:
 		c.DbCountyId = id
 	default:
-		log.Fatalf("Bad things man")
+		logger.Fatalf("Bad things man")
 	}
 
 	if c.DbCountyId > 0 {
-		log.Printf("County %s already exists", c.Fips)
+		logger.Infof("County %s already exists", c.Fips)
 	} else {
 		// Fetch the state id
 		row := db.QueryRow("SELECT id FROM states WHERE name = '$1' LIMIT 1", c.State)
 		switch err := row.Scan(&id); err {
 		case sql.ErrNoRows:
-			log.Println("No rows returned from State query. Do not insert until state has been inserted.")
+			logger.Println("No rows returned from State query. Do not insert until state has been inserted.")
 			return
 		case nil:
 			c.DbStateId = id
 		default:
-			log.Fatalf("Bad things man")
+			logger.Fatalf("Bad things man")
 		}
 
 		// Determine if the case is already present
 		row = db.QueryRow("SELECT id FROM states WHERE name = '$1' LIMIT 1", c.State)
 		switch err := row.Scan(&id); err {
 		case sql.ErrNoRows:
-			log.Println("No rows returned from State query. Do not insert until state has been inserted.")
+			logger.Println("No rows returned from State query. Do not insert until state has been inserted.")
 			return
 		case nil:
 			c.DbStateId = id
 		default:
-			log.Fatalf("Bad things man")
+			logger.Fatalf("Bad things man")
 		}
 
 		loc, _ := time.LoadLocation("UTC")
@@ -116,7 +115,7 @@ func (c CountyCase) Upsert(db *sql.DB) {
 		id := 0
 		err := db.QueryRow(sqlStatement, c.County, c.DbStateId, now, now).Scan(&id)
 		if err != nil {
-			log.Printf("Error inserting county record %s", err)
+			logger.Errorf("Error inserting county record %s", err)
 		}
 		c.DbCountyId = id
 
@@ -163,12 +162,12 @@ func (stateCase *StateCase) parseCsv(csvString []string) {
 	stateCase.Fips = csvString[2]
 	stateCase.Cases, err = strconv.Atoi(csvString[3])
 	if err != nil {
-		log.Printf("ERROR parsing case value %s", csvString[3])
+		logger.Errorf("ERROR parsing case value %s", csvString[3])
 		stateCase.Cases = 0
 	}
 	stateCase.Deaths, err = strconv.Atoi(csvString[4])
 	if err != nil {
-		log.Printf("ERROR parsing death value %s", csvString[4])
+		logger.Errorf("ERROR parsing death value %s", csvString[4])
 		stateCase.Deaths = 0
 	}
 }

@@ -4,18 +4,17 @@ import (
 	"bufio"
 	"encoding/csv"
 	"io"
-	"log"
 	"os"
 )
 
 func Transform(transformChan chan CaseFile, loadChan chan CovidCase) {
-	log.Println("Start Transform")
+	logger.Info("Start Transform")
 	for caseFile := range transformChan {
-		log.Printf("Start processing case file %s, %s", caseFile.FileType, caseFile.FilePath)
+		logger.Infof("Start processing case file %s, %s", caseFile.FileType, caseFile.FilePath)
 
 		csvFile, err := os.Open(caseFile.FilePath)
 		if err != nil {
-			log.Printf("Error opening the csv file %s. %s", caseFile.FilePath, err)
+			logger.Errorf("Error opening the csv file %s. %s", caseFile.FilePath, err)
 			continue
 		}
 		reader := csv.NewReader(bufio.NewReader(csvFile))
@@ -34,7 +33,7 @@ func Transform(transformChan chan CaseFile, loadChan chan CovidCase) {
 				}
 			}
 		}
-		log.Printf("Complete processing case file %s, %s", caseFile.FileType, caseFile.FilePath)
+		logger.Infof("Complete processing case file %s, %s", caseFile.FileType, caseFile.FilePath)
 	}
 	close(loadChan)
 }
