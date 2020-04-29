@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 	"sync"
 )
 
@@ -16,13 +17,17 @@ func main() {
 	initConfig()
 	var wg sync.WaitGroup
 
+	log.Println("Step")
 	fileTypes := []string{"county", "state"}
-
 	transformChan := make(chan CaseFile)
 	loadChan := make(chan CovidCase)
 
+	wg.Add(1)
 	go Load(loadChan, &wg)
 	go Transform(transformChan, loadChan)
+	close(transformChan)
+	wg.Wait()
+	os.Exit(0)
 
 	wg.Add(1) // done is at the end of the Load process
 	for _, fileType := range fileTypes {

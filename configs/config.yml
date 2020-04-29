@@ -1,4 +1,10 @@
 environment: development
+database:
+  host: 127.0.0.1
+  port: 5433
+  user_name: covid_user
+  password: my_password
+  database: covid_development
 log:
   base_path: log
   level: debug

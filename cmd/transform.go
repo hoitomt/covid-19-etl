@@ -9,6 +9,7 @@ import (
 )
 
 func Transform(transformChan chan CaseFile, loadChan chan CovidCase) {
+	log.Println("Start Transform")
 	for caseFile := range transformChan {
 		log.Printf("Start processing case file %s, %s", caseFile.FileType, caseFile.FilePath)
 

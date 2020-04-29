@@ -11,6 +11,12 @@ Extract data from the NY Times data set of covid-19 cases ([github link](https:/
   - `make migrate` Run migrations.
     - **NOTE** POSTGRESQL_URL is defined in .env
 
+### Run
+
+```
+make build run
+```
+
 ### Helpful commands
 
 - PSQL `docker-compose exec postgres psql -U covid_user -d covid_development`

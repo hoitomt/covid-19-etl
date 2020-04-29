@@ -1,24 +1,32 @@
 package main
 
 import (
+	"crypto/sha256"
+	"database/sql"
 	"fmt"
 	"log"
 	"strconv"
 	"time"
+
+	_ "github.com/kisielk/sqlstruct"
 )
 
 type CovidCase interface {
 	ToCaseSql() string
 	ToEntitySql() string
+	Upsert(*sql.DB)
 }
 
 type CountyCase struct {
-	Date   *time.Time
-	County string
-	State  string
-	Fips   string
-	Cases  int
-	Deaths int
+	Date       *time.Time
+	County     string
+	State      string
+	Fips       string
+	Cases      int
+	Deaths     int
+	DbCountyId int
+	DbCaseId   int
+	DbStateId  int
 }
 
 func NewCountyCase(csvString []string) CountyCase {
@@ -55,6 +63,75 @@ func (c CountyCase) ToCaseSql() string {
 
 func (c CountyCase) ToEntitySql() string {
 	return ""
+}
+
+func (c CountyCase) Upsert(db *sql.DB) {
+	// Determine if it is already in the database
+	id := 0
+	row := db.QueryRow("SELECT id FROM states WHERE name = '$1' LIMIT 1", c.State)
+	switch err := row.Scan(&id); err {
+	case sql.ErrNoRows:
+		log.Printf("No rows returned from State query. %s", err)
+	case nil:
+		c.DbCountyId = id
+	default:
+		log.Fatalf("Bad things man")
+	}
+
+	if c.DbCountyId > 0 {
+		log.Printf("County %s already exists", c.Fips)
+	} else {
+		// Fetch the state id
+		row := db.QueryRow("SELECT id FROM states WHERE name = '$1' LIMIT 1", c.State)
+		switch err := row.Scan(&id); err {
+		case sql.ErrNoRows:
+			log.Println("No rows returned from State query. Do not insert until state has been inserted.")
+			return
+		case nil:
+			c.DbStateId = id
+		default:
+			log.Fatalf("Bad things man")
+		}
+
+		// Determine if the case is already present
+		row = db.QueryRow("SELECT id FROM states WHERE name = '$1' LIMIT 1", c.State)
+		switch err := row.Scan(&id); err {
+		case sql.ErrNoRows:
+			log.Println("No rows returned from State query. Do not insert until state has been inserted.")
+			return
+		case nil:
+			c.DbStateId = id
+		default:
+			log.Fatalf("Bad things man")
+		}
+
+		loc, _ := time.LoadLocation("UTC")
+		now := time.Now().In(loc)
+
+		// Insert the county
+		sqlStatement := `
+		INSERT INTO counties (name, fips, state_id, created_at, updated_at)
+		VALUES ($1, $2, $3, $4, $5)
+		RETURNING id`
+		id := 0
+		err := db.QueryRow(sqlStatement, c.County, c.DbStateId, now, now).Scan(&id)
+		if err != nil {
+			log.Printf("Error inserting county record %s", err)
+		}
+		c.DbCountyId = id
+
+		sqlStatement = `
+		INSERT INTO county_data (date, county_id, cases, deaths, sha256_hash, created_at, updated_at)
+		VALUES ()
+		`
+	}
+}
+
+func (c CountyCase) sha256Hash() string {
+	h := sha256.New()
+	hashString := fmt.Sprintf("%s%s%s%s", c.Date, c.County, c.Cases, c.Deaths)
+	h.Write([]byte(hashString))
+	return fmt.Sprintf("%x", h.Sum(nil))
 }
 
 ////////// State Case /////////////
@@ -103,4 +180,7 @@ func (stateCase StateCase) ToCaseSql() string {
 
 func (stateCase StateCase) ToEntitySql() string {
 	return ""
+}
+
+func (stateCase StateCase) Upsert(db *sql.DB) {
 }
