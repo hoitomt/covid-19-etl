@@ -26,7 +26,7 @@ func TestCovidCountyCase(t *testing.T) {
 
 	logger.Infof("DB: %v", db)
 
-	county := db.GetCountyByName("eau claire")
+	county, _ := db.GetCountyByName("eau claire")
 	assert.Nil(t, county)
 
 	// testData := []string{"2020-01-21", "Snohomish", "Washington", "53061", "1", "0"}
