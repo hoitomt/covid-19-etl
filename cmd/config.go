@@ -1,6 +1,12 @@
 package main
 
 import (
+	"fmt"
+	"os"
+	"path"
+	"path/filepath"
+	"runtime"
+
 	log "github.com/sirupsen/logrus"
 
 	"github.com/spf13/pflag"
@@ -24,8 +30,16 @@ type ViperConfig struct {
 var Config ViperConfig
 
 func initConfig() {
-	configFilePath := pflag.StringP("config_file_path", "c", "configs", "Path to the configuration file")
+	env := os.Getenv("ENV")
+	fmt.Printf("Environment: %s\n", env)
 
+	basePath := projectBasePath()
+	fmt.Printf("Project Base Path: %s\n", basePath)
+
+	configFilePath := pflag.StringP("config_file_path",
+		"c",
+		filepath.Join(basePath, "config"),
+		"Path to the configuration file")
 	pflag.Parse()
 
 	viper.SetConfigName("config")
@@ -37,18 +51,25 @@ func initConfig() {
 	}
 
 	log.Println("Set Config variables")
-	Config.DataCountyBasePath = viper.GetString("data.county.base_path")
-	Config.DataCountyUrl = viper.GetString("data.county.url")
-	Config.DataStateBasePath = viper.GetString("data.state.base_path")
-	Config.DataStateUrl = viper.GetString("data.state.url")
+	Config.DataCountyBasePath = viper.GetString(fmt.Sprintf("%s.data.county.base_path", env))
+	Config.DataCountyUrl = viper.GetString(fmt.Sprintf("%s.data.county.url", env))
+	Config.DataStateBasePath = viper.GetString(fmt.Sprintf("%s.data.state.base_path", env))
+	Config.DataStateUrl = viper.GetString(fmt.Sprintf("%s.data.state.url", env))
 
-	Config.DbHost = viper.GetString("database.host")
-	Config.DbPort = viper.GetString("database.port")
-	Config.DbUserName = viper.GetString("database.user_name")
-	Config.DbPassword = viper.GetString("database.password")
-	Config.DbName = viper.GetString("database.database")
-	Config.LogFilePath = viper.GetString("log.path")
-	Config.LogLevel = viper.GetString("log.level")
+	Config.DbHost = viper.GetString(fmt.Sprintf("%s.database.host", env))
+	Config.DbPort = viper.GetString(fmt.Sprintf("%s.database.port", env))
+	Config.DbUserName = viper.GetString(fmt.Sprintf("%s.database.user_name", env))
+	Config.DbPassword = viper.GetString(fmt.Sprintf("%s.database.password", env))
+	Config.DbName = viper.GetString(fmt.Sprintf("%s.database.name", env))
+
+	Config.LogFilePath = filepath.Join(basePath, viper.GetString(fmt.Sprintf("%s.log.path", env)))
+	Config.LogLevel = viper.GetString(fmt.Sprintf("%s.log.level", env))
+}
+
+func projectBasePath() string {
+	_, b, _, _ := runtime.Caller(0)
+	d := path.Join(path.Dir(b))
+	return filepath.Dir(d)
 }
 
 func (c *ViperConfig) DataBasePath(category string) string {

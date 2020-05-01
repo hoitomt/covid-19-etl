@@ -2,8 +2,6 @@ package main
 
 import (
 	"sync"
-
-	"github.com/sirupsen/logrus"
 )
 
 type CaseFile struct {
@@ -12,11 +10,10 @@ type CaseFile struct {
 	DataChan chan CovidCase
 }
 
-var logger *logrus.Logger
-
 func main() {
 	initConfig()
-	logger = initLogging()
+	initLogger()
+
 	logger.Println("Start Application")
 	var wg sync.WaitGroup
 

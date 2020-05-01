@@ -17,6 +17,12 @@ Extract data from the NY Times data set of covid-19 cases ([github link](https:/
 make build run
 ```
 
+### Test
+
+1. Start Docker `docker-compose up`
+1. Setup the database: `make migrate_test`
+1. Run tests: `make test`
+
 ### Helpful commands
 
 - PSQL `docker-compose exec postgres psql -U covid_user -d covid_development`

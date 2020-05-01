@@ -1,0 +1,35 @@
+---
+base: &base
+  environment: development
+  database: &database
+    host: 127.0.0.1
+    port: 5433
+    user_name: covid_user
+    password: my_password
+    name: covid_development
+  log:
+    level: debug
+    path: log/development.log
+  data:
+    state:
+      base_path: data/state
+      url: https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-states.csv
+    county:
+      base_path: data/county
+      url: https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-counties.csv
+
+development:
+  <<: *base
+
+test:
+  <<: *base
+  database:
+    <<: *database
+    name: covid_test
+    port: 5432
+    user_name: hoitomt
+    password: badger
+    name: covid_test
+  log:
+    level: debug
+    path: log/test.log
